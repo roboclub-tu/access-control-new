@@ -27,6 +27,8 @@ The system consists of:
 
 Coming soon ..
 
+![alt text](https://cdn.discordapp.com/attachments/332861936926588929/807236174590509066/Schematic_test-access-control_2021-02-05_15-07-29.png)
+
 # 3D printed case for the stepper motor
 
 Coming soon ..
