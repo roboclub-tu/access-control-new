@@ -53,12 +53,15 @@
 
 //pins connected to the card reader D0 and D1 signals.
 //If using Wiegand reader, ensure your board supports external Interruptions on these pins
-#define PIN_D0 2
-#define PIN_D1 3
+#define PIN_D0 32 // black 
+#define PIN_D1 33 // red
 
 // Pins connected to LED lighting of the RFID controller (not mandatory)
-#define PIN_GRN_LED 4
-#define PIN_RED_LED 5
+#define PIN_GRN_LED 25
+//#define PIN_RED_LED 5 //WIEGAND READER DOESN'T HAVE RED LED CONTROL!
+
+// Pin connected to the buzzer
+#define PIN_BUZZER 26
 
 //Buttons that when pressed, add or remove a tag
 //ONLY NEEDED IF USING BUTTONS TO ADD TAGS
@@ -72,12 +75,12 @@
 //ONLY NEEDED IF USING STEP-MOTOR
 //TODO bandage fix for transfering values over different tabs, change to something more elegant
 #ifdef USING_STEP_MOTOR
-  extern const int step_pin 24
-  extern const int dir_pin 22
-  extern const int en_pin 28
-  extern const int ms1_pin 23
-  extern const int ms2_pin 25
-  extern const int ms3_pin 27
+  extern const int step_pin = 24
+  extern const int dir_pin = 22
+  extern const int en_pin = 28
+  extern const int ms1_pin = 23
+  extern const int ms2_pin = 25
+  extern const int ms3_pin = 27
 #endif
 
 ////////////////////////// NON REDACTABLE CODE /////////////////////////////
@@ -100,7 +103,7 @@ RfidDb database = RfidDb(NUM_OF_TAGS, 0);
 
 // Initialize Wiegand reader
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
 
   if(checkIfStepAndLockCorrectlyDefined() && checkIfTagReaderCorrectlyDefined() && checkIfButtonsAndWifiCorrectlyDefined()) {
     //If using ESP, we have to initialize the EEPROM
@@ -124,6 +127,8 @@ void setup() {
     
       //Sends the initial pin state to the Wiegand library
       pinStateChanged();
+
+      Serial.println("Successful configure");
     #endif
 
     //TODO configuring RFID 522 tag reader
