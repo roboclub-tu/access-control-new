@@ -89,6 +89,8 @@
 bool checkIfStepAndLockCorrectlyDefined();
 bool checkIfTagReaderCorrectlyDefined();
 bool checkIfButtonsAndWifiCorrectlyDefined();
+void accessGiven();
+void accessDenied();
 
 
 #ifdef USING_WIEGAND
@@ -101,7 +103,6 @@ bool checkIfButtonsAndWifiCorrectlyDefined();
 //Database storing all the tags
 RfidDb database = RfidDb(NUM_OF_TAGS, 0);
 
-// Initialize Wiegand reader
 void setup() {
   Serial.begin(115200);
 
@@ -109,7 +110,15 @@ void setup() {
     //If using ESP, we have to initialize the EEPROM
     #ifdef USING_ESP
       EEPROM.begin(database.dbSize());
-    #endif    
+    #endif
+
+    database.begin();
+
+    //If using buttons to add tags, init
+    #ifdef USING_BUTTONS
+      pinMode(PIN_ADD_TAG, INPUT);
+      pinMode(PIN_DEL_TAG, INPUT);
+    #endif
   
     //configuring Wiegand tag reader
     #ifdef USING_WIEGAND
@@ -163,8 +172,38 @@ void receivedData(uint8_t* data, uint8_t bits, const char* message) {
     }
     Serial.println();
 
+    #ifdef USING_BUTTONS
+      if(digitalRead(PIN_ADD_TAG) == HIGH) {
+        //Returns if write was successful
+        if(database.insert(data) { //TODO Debug
+          Serial.println("Insert successful"); 
+        } else {
+          Serial.println("ERROR: Couldn't insert tag");
+        }
+      } else if(digitalRead(PIN_DEL_TAG) == HIGH) {
+        database.remove(data); //TODO Debug
+        Serial.println("Tag deleted, if there was a tag");
+      } else {
+        if(database.contains(data)){ //TODO Debug
+          accessGiven();
+        } else {
+          accessDenied();
+        }
+      }
+    #endif
+
     //TODO open/close action
     //TODO check for pressed button and add/del tag
+}
+
+//If the scanned tag is in the database
+void accessGiven() {
+  Serial.println("change state");
+}
+
+//if the scanned tag isn't in the database
+void accessDenied() {
+  Serial.println("haha, door go brrr");
 }
 
 /////////////////////////// DEBUG FUNCTIONS /////////////////////////
