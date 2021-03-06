@@ -31,7 +31,7 @@
 //For 64 tags, the DB uses 258 bytes of EEPROM
 //To ensure compatibility, use a maximum of 127 tags
 
-#define NUM_OF_TAGS 64
+#define NUM_OF_TAGS 32
 
 //TODO for future uses, the Database can store names, as well as the tag, in order to see who came at what time.
 //TODO to calculate DB size -> (4+DB_CHAR_COUNT)*NUM_OF_TAGS + 2
@@ -51,7 +51,7 @@
 
 /////////////////////////// PIN SETUP ///////////////////////
 
-//pins connected to the card reader D0 and D1 signals.
+//pins connected to the card reader D0 and D1 signals
 //If using Wiegand reader, ensure your board supports external Interruptions on these pins
 #define PIN_D0 32 // black 
 #define PIN_D1 33 // red
@@ -99,6 +99,7 @@ void accessDenied();
 #endif
 
 #include <RfidDb.h>
+#include <EEPROM.h>
 
 //Database storing all the tags
 RfidDb database = RfidDb(NUM_OF_TAGS, 0);
@@ -172,25 +173,47 @@ void receivedData(uint8_t* data, uint8_t bits, const char* message) {
     }
     Serial.println();
 
+    
+
+   /*
+   //hate crimes against code here, fix pls
+   short tag = 0;
+   short modifier = 1;
+   for(int i = 0; i < data.length; i++) {
+    tag += data[i]*modifier;
+    modifier=modifier*10;
+   }
+
+   Serial.println("MODIFIED TAG: ");
+   Serial.println(tag);
+   */
+
+
+    uint32_t dbTag = stream2int(data);
+    Serial.println("uint32_t tag = " + dbTag);
+    
+  /*    
     #ifdef USING_BUTTONS
       if(digitalRead(PIN_ADD_TAG) == HIGH) {
         //Returns if write was successful
-        if(database.insert(data) { //TODO Debug
+        if(database.insert(dbTag)) { //TODO Debug
           Serial.println("Insert successful"); 
         } else {
           Serial.println("ERROR: Couldn't insert tag");
         }
       } else if(digitalRead(PIN_DEL_TAG) == HIGH) {
-        database.remove(data); //TODO Debug
+        database.remove(dbTag); //TODO Debug
         Serial.println("Tag deleted, if there was a tag");
       } else {
-        if(database.contains(data)){ //TODO Debug
+        if(database.contains(dbTag)){ //TODO Debug
           accessGiven();
         } else {
           accessDenied();
         }
       }
     #endif
+    */
+    
 
     //TODO open/close action
     //TODO check for pressed button and add/del tag
@@ -203,8 +226,16 @@ void accessGiven() {
 
 //if the scanned tag isn't in the database
 void accessDenied() {
-  Serial.println("haha, door go brrr");
+  Serial.println("haha, door not go brrr");
 }
+
+static inline uint32_t stream2int(const uint8_t *stream) {
+    return (((uint32_t) stream[0]) << 24 |
+            ((uint32_t) stream[1]) << 16 |
+            ((uint32_t) stream[2]) <<  8 |
+            ((uint32_t) stream[3]) <<  0);
+}
+
 
 /////////////////////////// DEBUG FUNCTIONS /////////////////////////
 
