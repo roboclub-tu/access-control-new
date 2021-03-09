@@ -1,3 +1,5 @@
+/*
+
 //This file has the purpose of simplifying the main file, by automating everything
 
 //Transfering variables from the main tab
@@ -39,3 +41,5 @@ bool changeLockState() {
 void lockDoor() {
   
 }
+
+*/
