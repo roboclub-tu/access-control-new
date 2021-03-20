@@ -9,7 +9,7 @@ The system consists of:
 
 # Hardware used
 
-- [ESP32 DEVKIT C](https://www.espressif.com/en/products/devkits/esp32-devkitc/overview)
+- [ESP32 DEVKIT C-V4](https://www.espressif.com/en/products/devkits/esp32-devkitc/overview)
 - [Wiegand 34](https://www.banggood.com/Long-Range-RFID-Card-Reader-13_56MHZ125KHZ-Proximity-Card-Access-Control-Reader-Wiegand34-IP65-Waterproof-NFC-Reader-p-1534554.html) chinese RFID card reader on 13.56 Mhz
 - [Nema 17](https://erelement.com/motori-reduktori/stepper-motor-12) bipolar stepper motor
 - [Pololu A4988](https://erelement.com/motor-control/motor-driver-a4988) driver for stepper motors
@@ -25,9 +25,7 @@ The system consists of:
 
 # Schematics
 
-Coming soon ..
-
-![alt text](https://cdn.discordapp.com/attachments/332861936926588929/807236174590509066/Schematic_test-access-control_2021-02-05_15-07-29.png)
+![alt text](https://cdn.discordapp.com/attachments/332861936926588929/822815819901566986/Schematic_test-access-control_2021-03-20_14-53-17.png)
 
 # 3D printed case for the stepper motor
 
