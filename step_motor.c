@@ -1,14 +1,4 @@
-/*
-
-//This file has the purpose of simplifying the main file, by automating everything
-
-//Transfering variables from the main tab
-extern const int step_pin;
-extern const int dir_pin;
-extern const int en_pin;
-extern const int ms1_pin;
-extern const int ms2_pin;
-extern const int ms3_pin;
+#include <step_motor.h>
 
 void initializeStepMotor(){
   pinMode(step_pin, OUTPUT);           // set pin to input
@@ -42,4 +32,3 @@ void lockDoor() {
   
 }
 
-*/

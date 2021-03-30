@@ -5,28 +5,13 @@
 #include <Wiegand.h>
 #include <EEPROM.h>
 #include <RfidDb.h>
+//#include <step_motor.h>
+#include <appconfig.h>
 
-///////// WIEGAND PINS
 
-#define PIN_D0 32
-#define PIN_D1 33
-
-#define PIN_GRN_LED 25
-#define PIN_BUZZER 26
-
-///////// BUTTON PINS
-
-#define PIN_ADD_TAG 12
-#define PIN_DEL_TAG 14
-
-///////// DATABASE
-
-#define MAX_NUM_OF_TAGS 16
-
-///////////NONREDACTABLE
-
+// RFID reader instance
 Wiegand wiegand;
-
+// Database instance
 RfidDb database = RfidDb(MAX_NUM_OF_TAGS, 0);
 
 // Initialize Wiegand reader
@@ -104,13 +89,11 @@ void receivedData(uint8_t* rawData, uint8_t bits, const char* message) {
         Serial.println("Insert failed");
       }
     }
-    
     //Check if deltag button is pressed, then delete tag from DB
     else if (digitalRead(PIN_DEL_TAG) == HIGH) {
       database.remove(dbTag);
       Serial.println("Deleted or didn't exist");
     }
-    
     //else check if tag is in DB, if yes: open door, else : access denied 
     else {
       if (database.contains(dbTag)) {
@@ -136,7 +119,6 @@ void receivedDataError(Wiegand::DataError error, uint8_t* rawData, uint8_t rawBi
         Serial.print(rawData[i] & 0xF, 16);
     }
     Serial.println();
-        
 }
 
 //Conversion from format Wiegand is using to format DB is using
