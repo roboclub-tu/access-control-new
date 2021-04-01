@@ -18,4 +18,9 @@
 
 #define MAX_NUM_OF_TAGS 16
 
+///////// STEP MOTOR
+
+#define PIN_DIR 99
+#define PIN_STEP 99
+
 #endif // APP_CONFIG_H_

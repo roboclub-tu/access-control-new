@@ -1,18 +1,20 @@
 /*
- * kill me
+ * 
  */
 
 #include <Wiegand.h>
 #include <EEPROM.h>
 #include <RfidDb.h>
-//#include <step_motor.h>
-#include <appconfig.h>
+#include "step_motor.h"
+#include "appconfig.h"
 
 
 // RFID reader instance
 Wiegand wiegand;
 // Database instance
 RfidDb database = RfidDb(MAX_NUM_OF_TAGS, 0);
+// Stepper motor instance
+StepMotor stepper;
 
 // Initialize Wiegand reader
 void setup() {
