@@ -10,6 +10,7 @@ class StepMotor
 	private:
 		void Unlock();
 		void Lock();
+		bool state;
 	
 	public:
 		StepMotor();

@@ -22,5 +22,6 @@
 
 #define PIN_DIR 99
 #define PIN_STEP 99
+#define STEP_PER_REV 200
 
 #endif // APP_CONFIG_H_
