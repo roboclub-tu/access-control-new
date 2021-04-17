@@ -14,6 +14,11 @@
 #define PIN_ADD_TAG 12
 #define PIN_DEL_TAG 14
 
+///////// SENSOR PINS
+
+#define PIN_MAGNET 34
+#define PIN_ENDSTOP 35
+
 ///////// DATABASE
 
 #define MAX_NUM_OF_TAGS 16

@@ -67,16 +67,8 @@ void stateChanged(bool plugged, const char* message) {
 // Notifies when a card was read.
 // Instead of a message, the seconds parameter can be anything you want -- Whatever you specify on `wiegand.onReceive()`
 void receivedData(uint8_t* rawData, uint8_t bits, const char* message) {
-    Serial.print(message);
-    Serial.print(bits);
-    Serial.print("bits / ");
-    //Print value in HEX
-    uint8_t bytes = (bits+7)/8;
-    for (int i=0; i<bytes; i++) {
-        Serial.print(rawData[i] >> 4, 16);
-        Serial.print(rawData[i] & 0xF, 16);
-    }
-    Serial.println();
+    //print data about the tag read to the serial monitor
+    printMessage(rawData, bits, message);
 
     //Converting to uint32_t so it's database friendly
     uint32_t dbTag = stream2int(rawData);
@@ -100,6 +92,7 @@ void receivedData(uint8_t* rawData, uint8_t bits, const char* message) {
     else {
       if (database.contains(dbTag)) {
         Serial.println("In DB");
+
       } else {
         Serial.println("NOT in DB");
       }
@@ -129,4 +122,17 @@ static inline uint32_t stream2int(const uint8_t *stream) {
             ((uint32_t) stream[1]) << 16 |
             ((uint32_t) stream[2]) <<  8 |
             ((uint32_t) stream[3]) <<  0);
+}
+
+void printMessage(uint8_t* rawData, uint8_t bits, const char* message) {
+    Serial.print(message);
+    Serial.print(bits);
+    Serial.print("bits / ");
+    //Print value in HEX
+    uint8_t bytes = (bits+7)/8;
+    for (int i=0; i<bytes; i++) {
+      Serial.print(rawData[i] >> 4, 16);
+      Serial.print(rawData[i] & 0xF, 16);
+    }
+    Serial.println();
 }
