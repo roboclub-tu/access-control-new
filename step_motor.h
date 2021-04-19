@@ -8,21 +8,21 @@
 class StepMotor 
 {
 	private:
-		void Unlock();
-		void Lock();
+		void unlock();
+		void lock();
 		bool isLocked; 
-    short StepsToStopper();
-    void MoveToLock(short steps);
-    void MoveToUnlock(short steps);
+    short stepsToStopper();
+    void moveToLock(short steps);
+    void moveToUnlock(short steps);
 	
 	public:
 		StepMotor();
 		
 		//Returns 0 if the door is unlocked, 1 if the door is locked
-		bool CheckIfLocked();
+		bool checkIfLocked();
 		
 		//Returns 0 if the door becomes locked, 1 if the door becomes unlocked
-		bool ChangeLockState();
+		bool changeLockState();
 };
 
 #endif // STEP_MOTOR_H_

@@ -1,13 +1,9 @@
-/*
- * 
- */
 
 #include <Wiegand.h>
 #include <EEPROM.h>
 #include <RfidDb.h>
 #include "step_motor.h"
 #include "appconfig.h"
-
 
 // RFID reader instance
 Wiegand wiegand;
@@ -22,22 +18,9 @@ void setup() {
 
   EEPROM.begin(database.dbSize());
   database.begin();
+  setupWiegand();
 
-  //Install listeners and initialize Wiegand reader
-  wiegand.onReceive(receivedData, "Card read: ");
-  wiegand.onReceiveError(receivedDataError, "Card read error: ");
-  wiegand.onStateChange(stateChanged, "State changed: ");
-  wiegand.begin(Wiegand::LENGTH_ANY, true);
-
-  //initialize pins as INPUT and attaches interruptions
-  pinMode(PIN_D0, INPUT);
-  pinMode(PIN_D1, INPUT);
-  attachInterrupt(digitalPinToInterrupt(PIN_D0), pinStateChanged, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(PIN_D1), pinStateChanged, CHANGE);
-
-  //Sends the initial pin state to the Wiegand library
-  pinStateChanged();
-
+  printSensorData();
   Serial.println("SETUP FINISHED");
 }
 
@@ -51,24 +34,15 @@ void loop() {
   delay(100);
 }
 
-// When any of the pins have changed, update the state of the wiegand library
-void pinStateChanged() {
-  wiegand.setPin0State(digitalRead(PIN_D0));
-  wiegand.setPin1State(digitalRead(PIN_D1));
-}
+/////////////// WIEGAND LOGIC /////////////////
 
-// Notifies when a reader has been connected or disconnected.
-// Instead of a message, the seconds parameter can be anything you want -- Whatever you specify on `wiegand.onStateChange()`
-void stateChanged(bool plugged, const char* message) {
-    Serial.print(message);
-    Serial.println(plugged ? "CONNECTED" : "DISCONNECTED");
-}
+//TODO this should probably be in a different object in the future
 
 // Notifies when a card was read.
 // Instead of a message, the seconds parameter can be anything you want -- Whatever you specify on `wiegand.onReceive()`
 void receivedData(uint8_t* rawData, uint8_t bits, const char* message) {
     //print data about the tag read to the serial monitor
-    printMessage(rawData, bits, message);
+    printTagMessage(rawData, bits, message);
 
     //Converting to uint32_t so it's database friendly
     uint32_t dbTag = stream2int(rawData);
@@ -99,6 +73,36 @@ void receivedData(uint8_t* rawData, uint8_t bits, const char* message) {
     }
 }
 
+void setupWiegand() {
+  //Install listeners and initialize Wiegand reader
+  wiegand.onReceive(receivedData, "Card read: ");
+  wiegand.onReceiveError(receivedDataError, "Card read error: ");
+  wiegand.onStateChange(stateChanged, "State changed: ");
+  wiegand.begin(Wiegand::LENGTH_ANY, true);
+
+  //initialize pins as INPUT and attaches interruptions
+  pinMode(PIN_D0, INPUT);
+  pinMode(PIN_D1, INPUT);
+  attachInterrupt(digitalPinToInterrupt(PIN_D0), pinStateChanged, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(PIN_D1), pinStateChanged, CHANGE);
+
+  //Sends the initial pin state to the Wiegand library
+  pinStateChanged();
+}
+
+// When any of the pins have changed, update the state of the wiegand library
+void pinStateChanged() {
+  wiegand.setPin0State(digitalRead(PIN_D0));
+  wiegand.setPin1State(digitalRead(PIN_D1));
+}
+
+// Notifies when a reader has been connected or disconnected.
+// Instead of a message, the seconds parameter can be anything you want -- Whatever you specify on `wiegand.onStateChange()`
+void stateChanged(bool plugged, const char* message) {
+    Serial.print(message);
+    Serial.println(plugged ? "CONNECTED" : "DISCONNECTED");
+}
+
 // Notifies when an invalid transmission is detected
 void receivedDataError(Wiegand::DataError error, uint8_t* rawData, uint8_t rawBits, const char* message) {
     Serial.print(message);
@@ -124,7 +128,7 @@ static inline uint32_t stream2int(const uint8_t *stream) {
             ((uint32_t) stream[3]) <<  0);
 }
 
-void printMessage(uint8_t* rawData, uint8_t bits, const char* message) {
+void printTagMessage(uint8_t* rawData, uint8_t bits, const char* message) {
     Serial.print(message);
     Serial.print(bits);
     Serial.print("bits / ");
@@ -135,4 +139,20 @@ void printMessage(uint8_t* rawData, uint8_t bits, const char* message) {
       Serial.print(rawData[i] & 0xF, 16);
     }
     Serial.println();
+}
+
+void printSensorData() {
+  Serial.print("Magnetic sensor: ");
+  if(digitalRead(PIN_MAGNET)) {
+    Serial.println("CLOSED");
+  } else {
+    Serial.println("OPENED");
+  }
+
+  Serial.print("Endstop sensor: ");
+  if(digitalRead(PIN_ENDSTOP)) {
+    Serial.println("NOT PRESSED");
+  } else {
+    Serial.println("PRESSED");
+  }
 }
