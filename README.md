@@ -25,7 +25,7 @@ The system consists of:
 
 # Schematics
 
-![alt text](https://cdn.discordapp.com/attachments/332861936926588929/822815819901566986/Schematic_test-access-control_2021-03-20_14-53-17.png)
+![alt text](https://cdn.discordapp.com/attachments/332861936926588929/834723029325709312/Schematic_test-access-control_2021-04-22_12-30-51.png)
 
 # 3D printed case for the stepper motor
 
