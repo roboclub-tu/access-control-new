@@ -28,10 +28,10 @@ void setup() {
 // This executes with interruptions disabled, since the Wiegand library is not thread-safe
 void loop() {
   noInterrupts();
-  wiegand.flush();
+  wiegand.flush(); //library is not thread safe and this method can fail if it's interrupted. Therefore, we need to turn off interrupts
   interrupts();
   //Sleep a little -- this doesn't have to run very often.
-  delay(100);
+  delay(100); //needed if we use authomatic tag size detection
 }
 
 /////////////// WIEGAND LOGIC /////////////////
@@ -66,7 +66,8 @@ void receivedData(uint8_t* rawData, uint8_t bits, const char* message) {
     else {
       if (database.contains(dbTag)) {
         Serial.println("In DB");
-
+        Serial.println("Changing lock state...");
+        stepper.changeLockState();
       } else {
         Serial.println("NOT in DB");
       }
@@ -105,19 +106,8 @@ void stateChanged(bool plugged, const char* message) {
 
 // Notifies when an invalid transmission is detected
 void receivedDataError(Wiegand::DataError error, uint8_t* rawData, uint8_t rawBits, const char* message) {
-    Serial.print(message);
     Serial.print(Wiegand::DataErrorStr(error));
-    Serial.print(" - Raw data: ");
-    Serial.print(rawBits);
-    Serial.print("bits / ");
-
-    //Print value in HEX
-    uint8_t bytes = (rawBits+7)/8;
-    for (int i=0; i<bytes; i++) {
-        Serial.print(rawData[i] >> 4, 16);
-        Serial.print(rawData[i] & 0xF, 16);
-    }
-    Serial.println();
+    printTagMessage(rawData, rawBits, message);
 }
 
 //Conversion from format Wiegand is using to format DB is using
