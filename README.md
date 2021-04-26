@@ -13,6 +13,8 @@ The system consists of:
 - [Wiegand 34](https://www.banggood.com/Long-Range-RFID-Card-Reader-13_56MHZ125KHZ-Proximity-Card-Access-Control-Reader-Wiegand34-IP65-Waterproof-NFC-Reader-p-1534554.html) chinese RFID card reader on 13.56 Mhz
 - [Nema 17](https://erelement.com/motori-reduktori/stepper-motor-12) bipolar stepper motor
 - [Pololu A4988](https://erelement.com/motor-control/motor-driver-a4988) driver for stepper motors
+- [Mech endstop V1.2](https://www.amazon.com/INCREWAY-Mechanical-Endstop-Printer-Makerbot/dp/B07JGFRSNJ) to determine when the door is locked
+- [Generic magnetic door sensor] to determine if the door is closed
 
 # Technical specification 
 [RFID system plan and specifications](https://docs.google.com/document/d/1yX86LziYzrwqBx-fCvdq2RcesHaJ3FzYKwYy3UPbjlI)
