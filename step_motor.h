@@ -14,15 +14,13 @@ class StepMotor
     short stepsToStopper();
     void moveToLock(short steps);
     void moveToUnlock(short steps);
+    bool checkIfLocked();
 	
 	public:
 		StepMotor();
 		
-		//Returns 0 if the door is unlocked, 1 if the door is locked
-		bool checkIfLocked();
-		
-		//Returns 0 if the door becomes locked, 1 if the door becomes unlocked
-		bool changeLockState();
+    //If door is locked, unlocks it and vise versa
+		void changeLockState();
 };
 
 #endif // STEP_MOTOR_H_

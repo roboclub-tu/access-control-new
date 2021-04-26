@@ -2,8 +2,10 @@
 #include "appconfig.h"
 #include "Arduino.h"
 
-int minStepsToUnlock = 0;
-int stepsToFullUnlock = 200; //TODO change
+//TODO move to appconfig.h
+int minStepsToUnlock = 750;
+int stepsToFullUnlock = 1050; //TODO test
+int stepsBeforeLockDown = 2500;
 
 //Constructor
 StepMotor::StepMotor() {
@@ -12,24 +14,18 @@ StepMotor::StepMotor() {
 
 	pinMode(PIN_DIR, OUTPUT);           // set pin to input
 	digitalWrite(PIN_DIR, LOW);       // turn on pullup resistors
-	
+
+  pinMode(PIN_EN, OUTPUT);
+  digitalWrite(PIN_EN, HIGH);
 }
 
-//
+//Doesn't check if door is closed, may cause an error if endstop is broken
 void StepMotor::unlock() {
   if(!digitalRead(PIN_ENDSTOP)){
-  	digitalWrite(PIN_DIR, HIGH);
-  	//220 steps = 1 rotation
-  	for(int i = 0; i < stepsToFullUnlock; i++){
-  		digitalWrite(PIN_STEP, HIGH);
-  		delay(10);
-  		digitalWrite(PIN_STEP, LOW);
-  		delay(10);
-  	}
-  	digitalWrite(PIN_DIR, LOW);
+  	moveToUnlock(stepsToFullUnlock);
     Serial.println("DOOR UNLOCKED");
 	} else {
-    Serial.println("LOCK NOT IN STATE TO BE UNLOCKED!!!");
+    Serial.println("DOOR NOT IN STATE TO BE UNLOCKED!!!");
 	}
 }
 
@@ -43,69 +39,67 @@ void StepMotor::lock() {
 }
 
 bool StepMotor::checkIfLocked() {
-	if(!digitalRead(PIN_ENDSTOP)) {
-    return true;
-  } else {
-    short steps = stepsToStopper();
-    
-    if(steps > minStepsToUnlock) {
+	if(digitalRead(PIN_ENDSTOP)) {
+    if(stepsToStopper() > minStepsToUnlock) {
       return false; //unlocked
     } else {
       return true; // locked
     }
+  } else {    
+    return true; //locked 
   }
 }
 
 //Checks how many steps are there to the stopper
 short StepMotor::stepsToStopper() {
-  //we need to make sure the door is closed at all times
-  short count = 0;
+  short count = 0; //keep count of steps made so far
   
   Serial.println("Testing steps to stopper...");
 
-  while(digitalRead(PIN_MAGNET) && !digitalRead(PIN_ENDSTOP)) {
-    moveToLock(1); //do 1 step at a time
+  digitalWrite(PIN_EN, LOW); //turn on the driver
+  digitalWrite(PIN_DIR, LOW); //set direction
+
+  //Door must be closed, endstop not reached, count of steps less than the maximum the lock can actually rotate
+  while(digitalRead(PIN_MAGNET) && !digitalRead(PIN_ENDSTOP) && count <= stepsBeforeLockDown) {
+    digitalWrite(PIN_STEP, HIGH);
+    delay(2);
+    digitalWrite(PIN_STEP, LOW);
+    delay(2);
     count++;
   }
   
   //if the door was opened during the testing, revert the steps for protect the door
+  //TODO implement debouncing, often one reading is false, then true
   if(!digitalRead(PIN_MAGNET)) {
     Serial.println("DOOR OPENED!");
-    moveToUnlock(count);
+    moveToUnlock(count); //revert progress to avoid damage to the door
     return -1;
   }
+
+  digitalWrite(PIN_EN, HIGH); //disable driver
+  
   return count;
 }
 
-//Returns 0 if the door becomes locked, 1 if the door becomes unlocked
-bool StepMotor::changeLockState() {
+//In the checkIfLocked method, lock goes to locked state to reach endstop.
+void StepMotor::changeLockState() {
   if(checkIfLocked()){
     unlock();
-  } else {
-    lock();
   }
 }
 
 //Moves the lock to an unlocked state. DOESN'T CHECK FOR SENSORS!
 void StepMotor::moveToUnlock(short steps) {
-    digitalWrite(PIN_DIR, HIGH);
-  //220 steps = 1 rotation
+  
+  digitalWrite(PIN_EN, LOW);
+  digitalWrite(PIN_DIR, HIGH);
+  
   for(int i = 0; i < steps; i++){
     digitalWrite(PIN_STEP, HIGH);
-    delay(10);
+    delay(2);
     digitalWrite(PIN_STEP, LOW);
-    delay(10);
+    delay(2);
   }
-}
 
-//Moves the lock to a locked state. DOESN'T CHECK FOR SENSORS!
-void StepMotor::moveToLock(short steps) {
-    digitalWrite(PIN_DIR, LOW);
-  //220 steps = 1 rotation
-  for(int i = 0; i < steps; i++){
-    digitalWrite(PIN_STEP, HIGH);
-    delay(10);
-    digitalWrite(PIN_STEP, LOW);
-    delay(10);
-  }
+  digitalWrite(PIN_EN, HIGH);
 }

@@ -3,30 +3,30 @@
 
 ///////// WIEGAND PINS
 
-#define PIN_D0 32
-#define PIN_D1 33
+#define PIN_D0 33
+#define PIN_D1 32
 
 #define PIN_GRN_LED 25
 #define PIN_BUZZER 26
 
 ///////// BUTTON PINS
 
-#define PIN_ADD_TAG 12
-#define PIN_DEL_TAG 14
+#define PIN_ADD_TAG  18
+#define PIN_DEL_TAG  19
 
 ///////// SENSOR PINS
 
-#define PIN_MAGNET 34
-#define PIN_ENDSTOP 35
+#define PIN_MAGNET  16
+#define PIN_ENDSTOP  17
 
 ///////// DATABASE
 
-#define MAX_NUM_OF_TAGS 16
+#define MAX_NUM_OF_TAGS   16
 
 ///////// STEP MOTOR
 
-#define PIN_DIR 99
-#define PIN_STEP 99
-#define STEP_PER_REV 200
+#define PIN_EN  22
+#define PIN_DIR  14
+#define PIN_STEP  12
 
 #endif // APP_CONFIG_H_
