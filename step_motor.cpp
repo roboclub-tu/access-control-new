@@ -39,7 +39,7 @@ void StepMotor::lock() {
 }
 
 bool StepMotor::checkIfLocked() {
-	if(digitalRead(PIN_ENDSTOP)) {
+	if(digitalRead(PIN_ENDSTOP)) { //TODO could be simplified since steps can be 0
     if(stepsToStopper() > minStepsToUnlock) {
       return false; //unlocked
     } else {
@@ -70,6 +70,7 @@ short StepMotor::stepsToStopper() {
   
   //if the door was opened during the testing, revert the steps for protect the door
   //TODO implement debouncing, often one reading is false, then true
+  //FIXME rewrite so it reverts with only one FALSE reading
   if(!digitalRead(PIN_MAGNET)) {
     Serial.println("DOOR OPENED!");
     moveToUnlock(count); //revert progress to avoid damage to the door
