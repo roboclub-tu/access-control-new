@@ -4,7 +4,7 @@
 
     //database connection
     define('DB_HOST', 'localhost');
-    define('DB_USENAME', 'roboclub_access_esp');
+    define('DB_USENAME', 'php_esp');
     define('DB_PASSWORD', 'test123');
     define('DB_NAME', 'roboclub_access_control');
 

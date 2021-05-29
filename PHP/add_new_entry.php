@@ -1,5 +1,6 @@
 <?php
     //POST apikey + hex encoded tag + is in ESP DB
+    //
 
     //database connection
     define('DB_HOST', 'localhost');
@@ -13,8 +14,15 @@
 
     if(!$mysql) {
         die("Connection failed: " . $mysql->error);
-    } else {
-        $
     }
+
+    if ($_POST["ApiKey"] == API_KEY) {
+
+        //TODO improve against injection
+        $tag_hex = $_POST["Tag"];
+    }
+    
+
+    $mysql->close();
 
 ?>

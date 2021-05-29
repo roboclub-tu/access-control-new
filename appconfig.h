@@ -29,4 +29,13 @@
 #define PIN_DIR  14
 #define PIN_STEP  12
 
+///////// INTERNET CONNECTION
+
+#define SSID "VIVACOM_NET"
+#define PASSWORD "12345678"
+
+#define SERVER_NAME "http://168.192.1.105:80/ESP/esp_data_handler.php"
+
+#define API_KEY "r2543fgo2" //sync with php file
+
 #endif // APP_CONFIG_H_

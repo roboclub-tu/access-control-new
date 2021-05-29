@@ -28,7 +28,7 @@ void setup() {
 // This executes with interruptions disabled, since the Wiegand library is not thread-safe
 void loop() {
   noInterrupts();
-  wiegand.flush(); //library is not thread safe and this method can fail if it's interrupted. Therefore, we need to turn off interrupts
+  wiegand.flush(); //library is not thread safe (interrupt based) and this method can fail if it's interrupted. Therefore, we need to turn off interrupts
   //flush is needed, because we don't have a set tag size 
   interrupts();
   //Sleep a little -- this doesn't have to run very often.
