@@ -2,8 +2,11 @@
 #include <Wiegand.h>
 #include <EEPROM.h>
 #include <RfidDb.h>
+#include <WiFi.h>
+#include <HTTPClient.h>
 #include "step_motor.h"
 #include "appconfig.h"
+
 
 // RFID reader instance
 Wiegand wiegand;
@@ -12,6 +15,10 @@ RfidDb database = RfidDb(MAX_NUM_OF_TAGS, 0);
 // Stepper motor instance
 StepMotor stepper;
 
+//FIXME bandage fix, see what var is needed for http.begin()
+String serverName = SERVER_NAME;
+String apiKey = API_KEY;
+
 // Initialize Wiegand reader
 void setup() {
   Serial.begin(115200);
@@ -19,6 +26,15 @@ void setup() {
   EEPROM.begin(database.dbSize());
   database.begin();
   setupWiegand();
+
+  WiFi.begin(SSID, PASSWORD);
+  Serial.println("Connecting");
+  while(WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.print("Connected to WiFi network with IP Address: ");
+  Serial.println(WiFi.localIP());
 
   printSensorData();
   Serial.println("SETUP FINISHED");
@@ -123,13 +139,18 @@ void printTagMessage(uint8_t* rawData, uint8_t bits, const char* message) {
     Serial.print(message);
     Serial.print(bits);
     Serial.print("bits / ");
+    
     //Print value in HEX
     uint8_t bytes = (bits+7)/8;
     for (int i=0; i<bytes; i++) {
       Serial.print(rawData[i] >> 4, 16);
       Serial.print(rawData[i] & 0xF, 16);
     }
+    /*
+    //TODO debug if new method works;
+    Serial.sprintf(char buffer[50],"%x", rawData);
     Serial.println();
+    */
 }
 
 void printSensorData() {
@@ -146,4 +167,36 @@ void printSensorData() {
   } else {
     Serial.println("PRESSED");
   }
+}
+
+bool addTagInDB(char* tag) {
+  //proceed only if connected
+    if(WiFi.status() == WL_CONNECTED) {
+      HTTPClient http;
+
+      http.begin(serverName.c_str());
+      http.addHeader("Content-Type", "application/x-www-form-urlencoded");
+
+      String httpRequestData = "ApiKey=" + apiKey + "&Tag=" + String(tag);
+
+      Serial.print("HTTP Request: ");
+      Serial.println(httpRequestData);
+      
+      int httpResponseCode = http.POST(httpRequestData);
+
+      Serial.print("HTTP Response Code: ");
+      Serial.println(httpResponseCode);
+
+      http.end();
+    } else {
+      Serial.println("WiFi not connected");
+    }
+}
+
+bool delTagInDb(char* tag) {
+
+}
+
+bool addEntry(char* tag) {
+  
 }
