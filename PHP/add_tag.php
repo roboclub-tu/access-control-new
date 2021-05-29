@@ -36,7 +36,6 @@
             echo("already in db / mysql error");
         }
     }
-    
 
     $mysql->close();
 

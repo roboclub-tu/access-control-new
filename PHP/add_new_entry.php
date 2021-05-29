@@ -20,8 +20,15 @@
 
         //TODO improve against injection
         $tag_hex = $_POST["Tag"];
+
+        $query = "INSERT INTO entries_esp (tag_hex) VALUES $tag_hex";
+
+        if($mysql->query($query)) {
+            echo "success";
+        } else {
+            echo "fail";
+        }
     }
-    
 
     $mysql->close();
 

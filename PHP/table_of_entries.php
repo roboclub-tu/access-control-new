@@ -40,13 +40,13 @@
 
             $mysql = new mysqli(DB_HOST, DB_USENAME, DB_PASSWORD, DB_NAME);
 
-            if ($mysql -> connect_errno) {
+            if ($mysql -> connect_error) {
                 echo "Failed to connect to MySQL: " . $mysql -> connect_error;
                 exit();
             }
 
             //last_entries is a view that shows last 200 entries
-            $sql = "SELECT * FROM last_entries;";
+            $sql = "SELECT * FROM last_entries";
 
             $result = $mysql->query($sql);
 

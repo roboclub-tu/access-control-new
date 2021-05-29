@@ -1,6 +1,4 @@
 <?php
-    //POST apikey + hex encoded tag + is in ESP DB
-    //
 
     //database connection
     define('DB_HOST', 'localhost');
@@ -23,7 +21,7 @@
         
         $sql_statement = "UPDATE `roboclub_access_control`.`users`
         SET in_esp = 0
-        WHERE tag_hex = $tag_hex;";
+        WHERE tag_hex = $tag_hex";
 
         if($mysql->query($sql_statement)) {
             echo("deleted sucessfully");
@@ -32,7 +30,6 @@
         }
     }
     
-
     $mysql->close();
 
 ?>
