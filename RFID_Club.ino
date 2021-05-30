@@ -19,13 +19,13 @@ StepMotor stepper;
 String serverName = SERVER_NAME;
 String apiKey = API_KEY;
 
-// Initialize Wiegand reader
+
 void setup() {
   Serial.begin(115200);
 
   EEPROM.begin(database.dbSize());
   database.begin();
-  setupWiegand();
+  setupWiegand(); // Initialize Wiegand reader
 
   WiFi.begin(SSID, PASSWORD);
   Serial.println("Connecting");
@@ -48,7 +48,7 @@ void loop() {
   //flush is needed, because we don't have a set tag size 
   interrupts();
   //Sleep a little -- this doesn't have to run very often.
-  delay(100); //needed if we use authomatic tag size detection
+  delay(100); //needed if we use automatic tag size detection
 }
 
 /////////////// WIEGAND LOGIC /////////////////
@@ -69,17 +69,29 @@ void receivedData(uint8_t* rawData, uint8_t bits, const char* message) {
     //Check if add tag button is pressed, then add tag to DB
     if (digitalRead(PIN_ADD_TAG) == HIGH) {
       if (database.insert(dbTag)) {
-        sendToServer(tag_hex, SERVER_ADD_TAG);
-        Serial.println("Inserted or already existed");
+        Serial.println("Inserted or already existed in local DB");
+        
+        if(sendToServer(tag_hex, SERVER_ADD_TAG)){
+          Serial.println("Succesfully added in Server");
+        } else {
+          Serial.println("Error writing to server!");
+        }
+        
       } else {
-        Serial.println("Insert failed");
+        Serial.println("Insert in local DB failed");
       }
     }
+    
     //Check if deltag button is pressed, then delete tag from DB
     else if (digitalRead(PIN_DEL_TAG) == HIGH) {
       database.remove(dbTag);
-      sendToServer(tag_hex, SERVER_DEL_TAG);
-      Serial.println("Deleted or didn't exist");
+      Serial.println("Deleted or didn't exist in local DB");
+
+      if(sendToServer(tag_hex, SERVER_DEL_TAG)){
+          Serial.println("Succesfully deleted from Server");
+      } else {
+          Serial.println("Error writing to server!");
+      }
     }
     //else check if tag is in DB, if yes: open door, else : access denied 
     else {
@@ -90,8 +102,13 @@ void receivedData(uint8_t* rawData, uint8_t bits, const char* message) {
       } else {
         Serial.println("NOT in DB");
       }
+      
       //TODO test if multithreading is needed (if proccess is too slow)
-      sendToServer(tag_hex, SERVER_ADD_ENTRY);
+      if(sendToServer(tag_hex, SERVER_ADD_ENTRY)){
+          Serial.println("Succesfully added entry in Server");
+      } else {
+          Serial.println("Error writing to server!");
+      }
     }
 }
 
@@ -158,6 +175,9 @@ String getHex(uint8_t* rawData, uint8_t bits) {
       hex += String(rawData[i] & 0xF, 16);
     }
 
+    //TODO remove
+    Serial.println("Generated hex: " + hex);
+    
     return hex;
 }
 
@@ -197,7 +217,15 @@ bool sendToServer(String tag, String path) {
       Serial.println(httpResponseCode);
 
       http.end();
+
+      if(httpResponesCode == 200) {
+        return true;
+      } else {
+        return false;
+      }
+      
     } else {
       Serial.println("WiFi not connected");
+      return false;
     }
 }
