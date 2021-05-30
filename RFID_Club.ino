@@ -58,8 +58,8 @@ void loop() {
 // Notifies when a card was read.
 // Instead of a message, the seconds parameter can be anything you want -- Whatever you specify on `wiegand.onReceive()`
 void receivedData(uint8_t* rawData, uint8_t bits, const char* message) {
-    //print data about the tag read to the serial monitor
-    printTagMessage(rawData, bits, message);
+    String tag_hex = getHex(rawData, bits);
+    printTagMessage(tag_hex, bits, message);
 
     //Converting to uint32_t so it's database friendly
     uint32_t dbTag = stream2int(rawData);
@@ -69,6 +69,7 @@ void receivedData(uint8_t* rawData, uint8_t bits, const char* message) {
     //Check if add tag button is pressed, then add tag to DB
     if (digitalRead(PIN_ADD_TAG) == HIGH) {
       if (database.insert(dbTag)) {
+        sendToServer(tag_hex, SERVER_ADD_TAG);
         Serial.println("Inserted or already existed");
       } else {
         Serial.println("Insert failed");
@@ -77,6 +78,7 @@ void receivedData(uint8_t* rawData, uint8_t bits, const char* message) {
     //Check if deltag button is pressed, then delete tag from DB
     else if (digitalRead(PIN_DEL_TAG) == HIGH) {
       database.remove(dbTag);
+      sendToServer(tag_hex, SERVER_DEL_TAG);
       Serial.println("Deleted or didn't exist");
     }
     //else check if tag is in DB, if yes: open door, else : access denied 
@@ -88,6 +90,8 @@ void receivedData(uint8_t* rawData, uint8_t bits, const char* message) {
       } else {
         Serial.println("NOT in DB");
       }
+      //TODO test if multithreading is needed (if proccess is too slow)
+      sendToServer(tag_hex, SERVER_ADD_ENTRY);
     }
 }
 
@@ -123,8 +127,10 @@ void stateChanged(bool plugged, const char* message) {
 
 // Notifies when an invalid transmission is detected
 void receivedDataError(Wiegand::DataError error, uint8_t* rawData, uint8_t rawBits, const char* message) {
+    String hex = getHex(rawData, rawBits);
     Serial.print(Wiegand::DataErrorStr(error));
-    printTagMessage(rawData, rawBits, message);
+    printTagMessage(hex, rawBits, message);
+    
 }
 
 //Conversion from format Wiegand is using to format DB is using
@@ -135,22 +141,24 @@ static inline uint32_t stream2int(const uint8_t *stream) {
             ((uint32_t) stream[3]) <<  0);
 }
 
-void printTagMessage(uint8_t* rawData, uint8_t bits, const char* message) {
+void printTagMessage(String hex, uint8_t bits, const char* message) {
     Serial.print(message);
     Serial.print(bits);
     Serial.print("bits / ");
+    Serial.println(hex);
+}
+
+//TODO test if new hex method works
+String getHex(uint8_t* rawData, uint8_t bits) {
+    String hex = "";
     
-    //Print value in HEX
     uint8_t bytes = (bits+7)/8;
     for (int i=0; i<bytes; i++) {
-      Serial.print(rawData[i] >> 4, 16);
-      Serial.print(rawData[i] & 0xF, 16);
+      hex += String(rawData[i] >> 4, 16);
+      hex += String(rawData[i] & 0xF, 16);
     }
-    /*
-    //TODO debug if new method works;
-    Serial.sprintf(char buffer[50],"%x", rawData);
-    Serial.println();
-    */
+
+    return hex;
 }
 
 void printSensorData() {
@@ -169,15 +177,16 @@ void printSensorData() {
   }
 }
 
-bool addTagInDB(char* tag) {
+//sends an http request containing a tag hex to the absolute path (foo.php)
+bool sendToServer(String tag, String path) {
   //proceed only if connected
     if(WiFi.status() == WL_CONNECTED) {
       HTTPClient http;
 
-      http.begin(serverName.c_str());
+      http.begin(serverName + path);
       http.addHeader("Content-Type", "application/x-www-form-urlencoded");
 
-      String httpRequestData = "ApiKey=" + apiKey + "&Tag=" + String(tag);
+      String httpRequestData = "ApiKey=" + apiKey + "&Tag=" + tag;
 
       Serial.print("HTTP Request: ");
       Serial.println(httpRequestData);
@@ -191,12 +200,4 @@ bool addTagInDB(char* tag) {
     } else {
       Serial.println("WiFi not connected");
     }
-}
-
-bool delTagInDb(char* tag) {
-
-}
-
-bool addEntry(char* tag) {
-  
 }

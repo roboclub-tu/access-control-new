@@ -34,7 +34,10 @@
 #define SSID "VIVACOM_NET"
 #define PASSWORD "12345678"
 
-#define SERVER_NAME "http://168.192.1.10/ESP/esp_data_handler.php"
+#define SERVER_NAME "http://168.192.1.10/"
+#define SERVER_ADD_TAG "add_tag.php"
+#define SERVER_DEL_TAG "del_tag.php"
+#define SERVER_ADD_ENTRY "add_new_entry.php"
 
 #define API_KEY "r2543fgo2" //sync with php file
 
