@@ -41,11 +41,14 @@ void StepMotor::lock() {
 bool StepMotor::checkIfLocked() {
 	if(digitalRead(PIN_ENDSTOP)) { //TODO could be simplified since steps can be 0
     if(stepsToStopper() > minStepsToUnlock) {
+      Serial.println("Steps to stopper > minsteps to unlock -> UNLOCKED");
       return false; //unlocked
     } else {
+      Serial.println("Steps to stopper < minsteps to unlock -> LOCKED");
       return true; // locked
     }
-  } else {    
+  } else { 
+    Serial.println("Stopper pressed -> LOCKED");   
     return true; //locked 
   }
 }
@@ -60,7 +63,7 @@ short StepMotor::stepsToStopper() {
   digitalWrite(PIN_DIR, LOW); //set direction
 
   //Door must be closed, endstop not reached, count of steps less than the maximum the lock can actually rotate
-  while(digitalRead(PIN_MAGNET) && !digitalRead(PIN_ENDSTOP) && count <= stepsBeforeLockDown) {
+  while(digitalRead(PIN_MAGNET) && digitalRead(PIN_ENDSTOP) && count <= stepsBeforeLockDown) {
     digitalWrite(PIN_STEP, HIGH);
     delay(2);
     digitalWrite(PIN_STEP, LOW);
