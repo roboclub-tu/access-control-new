@@ -60,7 +60,7 @@ short StepMotor::stepsToStopper() {
   digitalWrite(PIN_DIR, LOW); //set direction
 
   //Door must be closed, endstop not reached, count of steps less than the maximum the lock can actually rotate
-  while(digitalRead(PIN_MAGNET) && !digitalRead(PIN_ENDSTOP) && count <= stepsBeforeLockDown) {
+  while(digitalRead(PIN_MAGNET) && digitalRead(PIN_ENDSTOP) && count <= stepsBeforeLockDown) {
     digitalWrite(PIN_STEP, HIGH);
     delay(2);
     digitalWrite(PIN_STEP, LOW);

@@ -177,6 +177,8 @@ String getHex(uint8_t* rawData, uint8_t bits) {
 
     //TODO remove
     Serial.println("Generated hex: " + hex);
+
+    //TODO make toupper
     
     return hex;
 }
@@ -204,6 +206,7 @@ bool sendToServer(String tag, String path) {
       HTTPClient http;
 
       http.begin(serverName + path);
+      Serial.println("Server path:" + serverName + path);
       http.addHeader("Content-Type", "application/x-www-form-urlencoded");
 
       String httpRequestData = "ApiKey=" + apiKey + "&Tag=" + tag;
@@ -218,7 +221,7 @@ bool sendToServer(String tag, String path) {
 
       http.end();
 
-      if(httpResponesCode == 200) {
+      if(httpResponseCode == 200) {
         return true;
       } else {
         return false;
