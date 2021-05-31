@@ -30,11 +30,6 @@ void loop() {
   noInterrupts();
   wiegand.flush(); //library is not thread safe (interrupt based) and this method can fail if it's interrupted. Therefore, we need to turn off interrupts
   //flush is needed, because we don't have a set tag size
-
-  //DEBUG CODE
-  if(digitalRead(PIN_DEL_TAG)) {
-    stepper.changeLockState();
-  }
   
   interrupts();
   //Sleep a little -- this doesn't have to run very often.
