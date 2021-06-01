@@ -27,14 +27,21 @@ void setup() {
   database.begin();
   setupWiegand(); // Initialize Wiegand reader
 
+  long abandonTime = millis() + TIMEOUT_WIFI;
+
   WiFi.begin(SSID, PASSWORD);
   Serial.println("Connecting");
-  while(WiFi.status() != WL_CONNECTED) {
+  while(WiFi.status() != WL_CONNECTED && millis() < abandonTime) {
     delay(500);
     Serial.print(".");
   }
-  Serial.print("Connected to WiFi network with IP Address: ");
-  Serial.println(WiFi.localIP());
+
+  if(WiFi.status() == WL_CONNECTED) {
+    Serial.print("Connected to WiFi network with IP Address: ");
+    Serial.println(WiFi.localIP());
+  } else {
+    Serial.println("Couldn't connect to WiFi, continuing in offline mode");
+  }
 
   printSensorData();
   Serial.println("SETUP FINISHED");

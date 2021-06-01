@@ -29,10 +29,15 @@
 #define PIN_DIR  14
 #define PIN_STEP  12
 
+//todo implement functionality
+#define STEPS_MIN_TO_UNLOCK 750
+#define STEPS_FULL_TO_UNLOCK 1050
+#define STEPS_BEFORE_LOCKDOWN 1050
+
 ///////// INTERNET CONNECTION
 
-#define SSID "AstraZeneca - Chip #274482"
-#define PASSWORD "weedwagon"
+#define SSID "network name"
+#define PASSWORD "network password"
 
 #define SERVER_NAME "http://192.168.43.172/"
 #define SERVER_ADD_TAG "add_tag.php"
@@ -40,5 +45,7 @@
 #define SERVER_ADD_ENTRY "add_new_entry.php"
 
 #define API_KEY "r2543fgo2" //sync with php file
+
+#define TIMEOUT_WIFI 10000 //how many ms before abandoning attempt to connect to wifi
 
 #endif // APP_CONFIG_H_
