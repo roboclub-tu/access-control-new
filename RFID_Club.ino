@@ -19,7 +19,6 @@ StepMotor stepper;
 String serverName = SERVER_NAME;
 String apiKey = API_KEY;
 
-
 void setup() {
   Serial.begin(115200);
 
