@@ -36,10 +36,10 @@
 
 ///////// INTERNET CONNECTION
 
-#define SSID "network name"
-#define PASSWORD "network password"
+#define SSID "Roboclub"
+#define PASSWORD "roboclub9405"
 
-#define SERVER_NAME "http://192.168.43.172/"
+#define SERVER_NAME "http://192.168.0.101/"
 #define SERVER_ADD_TAG "add_tag.php"
 #define SERVER_DEL_TAG "del_tag.php"
 #define SERVER_ADD_ENTRY "add_new_entry.php"
