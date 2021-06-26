@@ -47,22 +47,40 @@ t_int8,16,32 - essentially a byte, short and int. Number shows how many bits of 
 
 When you get the RFID tag close to the reader, the ESP reads the tag via the Wiegand library (interrupt based, therefore not thread-safe). The tag is saved as an t_int8. The database uses t_int32 to save the tags, so we convert it to t_int32.
 
-If add tag button is pressed (digitalRead), we use the insert method of the database library. If it has been inserted or it already exists, it returns true.
+If add tag button is pressed (digitalRead), we use the insert method of the database library. If it has been inserted or it already exists, it returns true. If insertion in local DB has been succesful, the SendToServer(SERVER_ADD_TAG) method is called (see Networking).
 
-If delete tag button is pressed (digitalRead), we use the remove method of the database library. In its current version, it does NOT return whether deleting is succesful.
+If delete tag button is pressed (digitalRead), we use the remove method of the database library. In its current version, it does NOT return whether deleting is succesful. After remove is executed, sendToServer(SERVER_DEL_TAG) method is called (See Networking).
 
-If no button is pressed, the program proceeds to using the StepMotor object and the changeLockState method.
+If no button is pressed, the program proceeds to using the StepMotor object and the changeLockState method. After executing changeLockState(), sendToServer(SERVER_ADD_ENTRY) method is called (See Networking).
+
 
 2. changeLockState() method
+
+the StepMotor library is based on 3 hardware components - Endstop sensor (checks when the door is locked), magnetic door sensor (checks if the door is opened) and the step motor itself (drives the lock).
+
+(ENDSTOP REACHED, DOOR CLOSED) - The door is locked. When using the changeLockState() method, the lock will move with STEPS_FULL_TO_UNLOCK number of steps to unlock the door
+(ENDSTOP REACHED, DOOR OPENED) - Not programmed, you can only reach this state if one of the sensors is broken
+(ENDSTOP NOT REACHED, DOOR OPENED) - The door is currently opened, so the tag can be read, added/deleted from DB and the ESP can connect to the server, but after the StepMotor library sees the door sensor is indicating open door, it prints that the state is not in state to be moved
+(ENDSTOP NOT REACHED, DOOR CLOSED) - The stepsToStopper() method is called, that counts how many steps are made until the endstop sensor is reached and returns it. 
+If the door has been opened while stepsToStopper() is being executed, the lock moves to the opposite direction with the number of steps made so far. The method returns -1 steps made after that.
+If there are more steps made than the STEPS_BEFORE_LOCKDOWN in appconfig.h, the check to steps method returns STEPS_BEFORE_LOCKDOWN and stops moving the lock.
+
+After we have the number of steps, if they are bigger than STEPS_MIN_TO_UNLOCK, it means the lock WAS in locked state. if it was lower than STEPS_MIN_TO_UNLOCK, it means it WAS in unlocked state.
+
+After we know the before state of the lock, we can unlock it(steps>STEPS_MIN_TO_UNLOCK) or leave it (steps<STEPS_MIN_TO_UNLOCK), since in the stepsToStopper() method, we already locked it.
+
+Unlocking the door means moving it with STEPS_FULL_TO_UNLOCK steps in the opposite direction.
+
 
 
 3. Networking
 
-The system consists of a *door* client and a raspberry server listener. When the *door* registers an event (scanning the RFID tag), it sends information to the server. This event may be:
-  1. Adding a new tag
-  2. Deleting a tag (may or may not be written in the ESP database)
-  3. Changing the lock state (when you just scan the RFID tag)
+In the appconfig file, there is information about the server path (local ip in this example) and relative paths to different php files (add_tag.php, del_tag.php, add_new_entry.php). They all take 2 arguments via POST, which are the API key and tag hex. Each of these represents a different event from the ESP. There is also information about the WiFi network (SSID, password) the ESP will connect to.
 
-In the appconfig file, there is information about the server path (local ip in this example) and relative paths to different php files (add_tag.php, del_tag.php, add_new_entry.php). They all take 2 arguments via POST, which are the API key and tag hex. Each of these represents a different event from the ESP and are connected to according to the ESP event.
+during the setup of the ESP, it will try to connect to the WiFi network. If it can't for more then the TIMEOUT_WIFI ms (from appconfig.h), it will continue on in offline mode, while trying to connect in the background.
+
+!Sometimes the ESP bugs and refuses to connect to the WiFi network, a restart of the ESP solves that problem. 
+
+When the ESP registers an event (adding/deleting a tag, changing lock state), the SendToServer() method is called from within the event. This method takes 1 argument, which is the relative path to the needed .php file. If add_tag button is pressed for example, the method is called with sendToServer(SERVER_ADD_TAG).
 
 
