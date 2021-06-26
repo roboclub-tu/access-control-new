@@ -29,13 +29,23 @@
 #define PIN_DIR  14
 #define PIN_STEP  12
 
+//todo implement functionality
+#define STEPS_MIN_TO_UNLOCK 750
+#define STEPS_FULL_TO_UNLOCK 1050
+#define STEPS_BEFORE_LOCKDOWN 1050
+
 ///////// INTERNET CONNECTION
 
-#define SSID "VIVACOM_NET"
-#define PASSWORD "12345678"
+#define SSID "Roboclub"
+#define PASSWORD "roboclub9405"
 
-#define SERVER_NAME "http://168.192.1.105:80/ESP/esp_data_handler.php"
+#define SERVER_NAME "http://192.168.0.101/"
+#define SERVER_ADD_TAG "add_tag.php"
+#define SERVER_DEL_TAG "del_tag.php"
+#define SERVER_ADD_ENTRY "add_new_entry.php"
 
 #define API_KEY "r2543fgo2" //sync with php file
+
+#define TIMEOUT_WIFI 10000 //how many ms before abandoning attempt to connect to wifi
 
 #endif // APP_CONFIG_H_

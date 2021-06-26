@@ -2,8 +2,11 @@
 #include <Wiegand.h>
 #include <EEPROM.h>
 #include <RfidDb.h>
+#include <WiFi.h>
+#include <HTTPClient.h>
 #include "step_motor.h"
 #include "appconfig.h"
+
 
 // RFID reader instance
 Wiegand wiegand;
@@ -12,13 +15,32 @@ RfidDb database = RfidDb(MAX_NUM_OF_TAGS, 0);
 // Stepper motor instance
 StepMotor stepper;
 
-// Initialize Wiegand reader
+//FIXME bandage fix, see what var is needed for http.begin()
+String serverName = SERVER_NAME;
+String apiKey = API_KEY;
+
 void setup() {
   Serial.begin(115200);
 
   EEPROM.begin(database.dbSize());
   database.begin();
-  setupWiegand();
+  setupWiegand(); // Initialize Wiegand reader
+
+  long abandonTime = millis() + TIMEOUT_WIFI;
+
+  WiFi.begin(SSID, PASSWORD);
+  Serial.println("Connecting");
+  while(WiFi.status() != WL_CONNECTED && millis() < abandonTime) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  if(WiFi.status() == WL_CONNECTED) {
+    Serial.print("Connected to WiFi network with IP Address: ");
+    Serial.println(WiFi.localIP());
+  } else {
+    Serial.println("Couldn't connect to WiFi, continuing in offline mode");
+  }
 
   printSensorData();
   Serial.println("SETUP FINISHED");
@@ -33,7 +55,7 @@ void loop() {
   
   interrupts();
   //Sleep a little -- this doesn't have to run very often.
-  delay(100); //needed if we use authomatic tag size detection
+  delay(100); //needed if we use automatic tag size detection
 }
 
 /////////////// WIEGAND LOGIC /////////////////
@@ -43,8 +65,8 @@ void loop() {
 // Notifies when a card was read.
 // Instead of a message, the seconds parameter can be anything you want -- Whatever you specify on `wiegand.onReceive()`
 void receivedData(uint8_t* rawData, uint8_t bits, const char* message) {
-    //print data about the tag read to the serial monitor
-    printTagMessage(rawData, bits, message);
+    String tag_hex = getHex(rawData, bits);
+    printTagMessage(tag_hex, bits, message);
 
     //Converting to uint32_t so it's database friendly
     uint32_t dbTag = stream2int(rawData);
@@ -54,15 +76,29 @@ void receivedData(uint8_t* rawData, uint8_t bits, const char* message) {
     //Check if add tag button is pressed, then add tag to DB
     if (digitalRead(PIN_ADD_TAG) == HIGH) {
       if (database.insert(dbTag)) {
-        Serial.println("Inserted or already existed");
+        Serial.println("Inserted or already existed in local DB");
+        
+        if(sendToServer(tag_hex, SERVER_ADD_TAG)){
+          Serial.println("Succesfully added in Server");
+        } else {
+          Serial.println("Error writing to server!");
+        }
+        
       } else {
-        Serial.println("Insert failed");
+        Serial.println("Insert in local DB failed");
       }
     }
+    
     //Check if deltag button is pressed, then delete tag from DB
     else if (digitalRead(PIN_DEL_TAG) == HIGH) {
       database.remove(dbTag);
-      Serial.println("Deleted or didn't exist");
+      Serial.println("Deleted or didn't exist in local DB");
+
+      if(sendToServer(tag_hex, SERVER_DEL_TAG)){
+          Serial.println("Succesfully deleted from Server");
+      } else {
+          Serial.println("Error writing to server!");
+      }
     }
     //else check if tag is in DB, if yes: open door, else : access denied 
     else {
@@ -72,6 +108,13 @@ void receivedData(uint8_t* rawData, uint8_t bits, const char* message) {
         stepper.changeLockState();
       } else {
         Serial.println("NOT in DB");
+      }
+      
+      //TODO test if multithreading is needed (if proccess is too slow)
+      if(sendToServer(tag_hex, SERVER_ADD_ENTRY)){
+          Serial.println("Succesfully added entry in Server");
+      } else {
+          Serial.println("Error writing to server!");
       }
     }
 }
@@ -108,8 +151,10 @@ void stateChanged(bool plugged, const char* message) {
 
 // Notifies when an invalid transmission is detected
 void receivedDataError(Wiegand::DataError error, uint8_t* rawData, uint8_t rawBits, const char* message) {
+    String hex = getHex(rawData, rawBits);
     Serial.print(Wiegand::DataErrorStr(error));
-    printTagMessage(rawData, rawBits, message);
+    printTagMessage(hex, rawBits, message);
+    
 }
 
 //Conversion from format Wiegand is using to format DB is using
@@ -120,17 +165,29 @@ static inline uint32_t stream2int(const uint8_t *stream) {
             ((uint32_t) stream[3]) <<  0);
 }
 
-void printTagMessage(uint8_t* rawData, uint8_t bits, const char* message) {
+void printTagMessage(String hex, uint8_t bits, const char* message) {
     Serial.print(message);
     Serial.print(bits);
     Serial.print("bits / ");
-    //Print value in HEX
+    Serial.println(hex);
+}
+
+//TODO test if new hex method works
+String getHex(uint8_t* rawData, uint8_t bits) {
+    String hex = "";
+    
     uint8_t bytes = (bits+7)/8;
     for (int i=0; i<bytes; i++) {
-      Serial.print(rawData[i] >> 4, 16);
-      Serial.print(rawData[i] & 0xF, 16);
+      hex += String(rawData[i] >> 4, 16);
+      hex += String(rawData[i] & 0xF, 16);
     }
-    Serial.println();
+
+    //TODO remove
+    Serial.println("Generated hex: " + hex);
+
+    //TODO make toupper
+    
+    return hex;
 }
 
 void printSensorData() {
@@ -147,4 +204,38 @@ void printSensorData() {
   } else {
     Serial.println("PRESSED");
   }
+}
+
+//sends an http request containing a tag hex to the absolute path (foo.php)
+bool sendToServer(String tag, String path) {
+  //proceed only if connected
+    if(WiFi.status() == WL_CONNECTED) {
+      HTTPClient http;
+
+      http.begin(serverName + path);
+      Serial.println("Server path:" + serverName + path);
+      http.addHeader("Content-Type", "application/x-www-form-urlencoded");
+
+      String httpRequestData = "ApiKey=" + apiKey + "&Tag=" + tag;
+
+      Serial.print("HTTP Request: ");
+      Serial.println(httpRequestData);
+      
+      int httpResponseCode = http.POST(httpRequestData);
+
+      Serial.print("HTTP Response Code: ");
+      Serial.println(httpResponseCode);
+
+      http.end();
+
+      if(httpResponseCode == 200) {
+        return true;
+      } else {
+        return false;
+      }
+      
+    } else {
+      Serial.println("WiFi not connected");
+      return false;
+    }
 }
