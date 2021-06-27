@@ -32,19 +32,19 @@
 //todo implement functionality
 #define STEPS_MIN_TO_UNLOCK 750
 #define STEPS_FULL_TO_UNLOCK 1050
-#define STEPS_BEFORE_LOCKDOWN 1050
+#define STEPS_BEFORE_LOCKDOWN 1550
 
 ///////// INTERNET CONNECTION
 
-#define SSID "Roboclub"
-#define PASSWORD "roboclub9405"
+#define SSID "your network name"
+#define PASSWORD "password"
 
-#define SERVER_NAME "http://192.168.0.101/"
+#define SERVER_NAME "http://192.168.0.0/" //replace with your server url
 #define SERVER_ADD_TAG "add_tag.php"
 #define SERVER_DEL_TAG "del_tag.php"
 #define SERVER_ADD_ENTRY "add_new_entry.php"
 
-#define API_KEY "r2543fgo2" //sync with php file
+#define API_KEY "your API key" //sync with php file
 
 #define TIMEOUT_WIFI 10000 //how many ms before abandoning attempt to connect to wifi
 
