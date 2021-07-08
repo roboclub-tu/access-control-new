@@ -28,7 +28,8 @@
     <table>
         <tr>
             <th>Name</th>
-            <th>In Esp</th>
+            <th>In Esp Local DB</th>
+            <th>Action</th>
             <th>Timestamp</th>
         </tr>
         <?php
@@ -45,15 +46,15 @@
                 exit();
             }
 
-            //last_entries is a view that shows last 200 entries
-            $sql = "SELECT * FROM last_entries";
+            //last_actions is a view that shows last 200 entries
+            $sql = "SELECT * FROM last_actions";
 
             $result = $mysql->query($sql);
 
             if($result->num_rows > 0) {
                 while($row = $result->fetch_assoc()) { //fetch an array within an array
                     //print 1 line
-                    echo "<tr><td>" . $row["name"] . "</td><td>" . $row["in_esp"] . "</td><td>" . $row["timestamp"] . "</td></tr>";
+                    echo "<tr><td>" . $row["name"] . "</td><td>" . $row["in_esp"] . "</td><td>" . $row["action"] . "</td></tr>" . $row["timestamp"] . "</td></tr>";
                 }
                 echo "</table>";
             } else {
