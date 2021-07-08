@@ -86,6 +86,7 @@ short StepMotor::stepsToStopper() {
 }
 
 //In the checkIfLocked method, lock goes to locked state to reach endstop.
+//TODO rewrite to return locked/unlocked/scanned
 void StepMotor::changeLockState() {
   if(checkIfLocked()){
     unlock();

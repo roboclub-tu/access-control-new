@@ -10,6 +10,13 @@
 
     define('API_KEY', 'r2543fgo2');
 
+    //variables posted from ESP, sync with ESP
+    define('ADD_TAG', 'ADD_TAG');
+    define('DEL_TAG', 'DEL_TAG');
+    define('LOCK', 'LOCK');
+    define('UNLOCK', 'UNLOCK');
+    define('SCAN', 'SCAN');
+
     $mysql = new mysqli(DB_HOST, DB_USENAME, DB_PASSWORD, DB_NAME);
 
     if ($mysql -> connect_error) {
@@ -20,9 +27,21 @@
     if ($_POST["ApiKey"] == API_KEY) {
 
         //TODO improve against injection
-        $tag_hex = $_POST["Tag"];
+        $tag_hex = strtoupper($_POST["Tag"]);
+        $action = ($_POST["Action"]);
 
         $query = "INSERT INTO entries_esp(tag_hex) VALUES(\"$tag_hex\")";
+
+        switch($action) {
+            case ADD_TAG:
+                $query = "CALL tag_added_esp(\"$tag_hex\")";
+                break;
+            case DEL_TAG:
+                $query = "CALL tag_deleted_esp(\"$tag_hex\")";
+                break;
+            case LOCK:
+                $query = "INSERT INTO actions_esp(tag_hex, action) VALUES(\"$tag_hex\", \"LOCK\")";
+        }
 
         if($mysql->query($query)) {
             echo "success";

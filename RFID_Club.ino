@@ -15,10 +15,6 @@ RfidDb database = RfidDb(MAX_NUM_OF_TAGS, 0);
 // Stepper motor instance
 StepMotor stepper;
 
-//FIXME bandage fix, see what var is needed for http.begin()
-String serverName = SERVER_NAME;
-String apiKey = API_KEY;
-
 void setup() {
   Serial.begin(115200);
 
@@ -111,7 +107,7 @@ void receivedData(uint8_t* rawData, uint8_t bits, const char* message) {
       }
       
       //TODO test if multithreading is needed (if proccess is too slow)
-      if(sendToServer(tag_hex, SERVER_ADD_ENTRY)){
+      if(sendToServer(tag_hex, SERVER_SCAN)){
           Serial.println("Succesfully added entry in Server");
       } else {
           Serial.println("Error writing to server!");
@@ -172,7 +168,6 @@ void printTagMessage(String hex, uint8_t bits, const char* message) {
     Serial.println(hex);
 }
 
-//TODO test if new hex method works
 String getHex(uint8_t* rawData, uint8_t bits) {
     String hex = "";
     
@@ -207,16 +202,19 @@ void printSensorData() {
 }
 
 //sends an http request containing a tag hex to the absolute path (foo.php)
-bool sendToServer(String tag, String path) {
+bool sendToServer(String tag, String action) {
   //proceed only if connected
     if(WiFi.status() == WL_CONNECTED) {
       HTTPClient http;
 
-      http.begin(serverName + path);
-      Serial.println("Server path:" + serverName + path);
+      String serverName = SERVER_NAME; //http.begin method requires a string with an address
+      String apiKey = API_KEY;
+      
+      http.begin(serverName); 
+      Serial.println("Server path:" + serverName);
       http.addHeader("Content-Type", "application/x-www-form-urlencoded");
 
-      String httpRequestData = "ApiKey=" + apiKey + "&Tag=" + tag;
+      String httpRequestData = "ApiKey=" + apiKey + "&Tag=" + tag + "&Action=" + action;
 
       Serial.print("HTTP Request: ");
       Serial.println(httpRequestData);
