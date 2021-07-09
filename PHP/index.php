@@ -54,7 +54,7 @@
             if($result->num_rows > 0) {
                 while($row = $result->fetch_assoc()) { //fetch an array within an array
                     //print 1 line
-                    echo "<tr><td>" . $row["name"] . "</td><td>" . $row["in_esp"] . "</td><td>" . $row["action"] . "</td></tr>" . $row["timestamp"] . "</td></tr>";
+                    echo "<tr><td>" . $row["name"] . "</td><td>" . $row["in_esp"] . "</td><td>" . $row["action"] . "</td><td>" . $row["timestamp"] . "</td></tr>";
                 }
                 echo "</table>";
             } else {

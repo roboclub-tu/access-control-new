@@ -1,13 +1,11 @@
 <?php
-    //POST apikey + hex encoded tag + is in ESP DB
-    //
-
     //database connection
     define('DB_HOST', 'localhost');
     define('DB_USENAME', 'php_esp');
     define('DB_PASSWORD', 'test123');
     define('DB_NAME', 'roboclub_access_control');
 
+    //TODO change to a config file or a json object
     define('API_KEY', 'r2543fgo2');
 
     //variables posted from ESP, sync with ESP
