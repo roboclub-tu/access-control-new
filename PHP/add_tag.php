@@ -21,7 +21,7 @@
     if ($_POST["ApiKey"] == API_KEY) {
 
         //TODO improve against injection
-        $tag_hex = $_POST["Tag"];
+        $tag_hex = strtoupper($_POST["Tag"]);
 
         //TODO procedure to test if tag already in db
         //   if yes, update
