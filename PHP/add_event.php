@@ -32,7 +32,7 @@
         exit();
     }
 
-    if ($_POST["ApiKey"] == API_KEY) {
+    if (true) {
 
         //TODO improve against injection
         $tag_hex = strtoupper($_POST["Tag"]);
@@ -40,23 +40,27 @@
 
         $query = "";
 
-        switch($action) {
+        switch($event) {
             case ADD_TAG:
-                $query = ADD_TAG_QUERY;
+                $query = "CALL tag_added_esp(\"$tag_hex\")";
                 break;
             case DEL_TAG:
-                $query = DEL_TAG_QUERY;
+                $query = "CALL tag_deleted_esp(\"$tag_hex\")";
                 break;
             case LOCK:
-                $query = LOCK_QUERY;
+                $query = "INSERT INTO events_esp(tag_hex, event) VALUES(\"$tag_hex\", \"LOCK\")";
                 break;
             case UNLOCK:
-                $query = UNLOCK_QUERY;
+                $query = "INSERT INTO events_esp(tag_hex, event) VALUES(\"$tag_hex\", \"UNLOCK\")";
                 break;
             case SCAN:
-                $query = SCAN_QUERY;
+                $query = "INSERT INTO events_esp(tag_hex, event) VALUES(\"$tag_hex\", \"SCAN\")";
+                break;
+            default:
+                $query = "INSERT INTO events_esp(tag_hex, event) VALUES(\"$tag_hex\", \"ERROR\")";
                 break;
         }
+        echo $query;
 
         if($mysql->query($query)) {
             echo "success";
