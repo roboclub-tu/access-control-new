@@ -39,7 +39,7 @@
 #define SSID "your network name"
 #define PASSWORD "password"
 
-#define SERVER_NAME "http://192.168.0.0/" //replace with your server url
+#define SERVER_NAME "http://192.168.0.0/add_event.php" //replace with your server url
 #define SERVER_ADD_TAG "add_tag.php"
 #define SERVER_DEL_TAG "del_tag.php"
 #define SERVER_ADD_ENTRY "add_new_entry.php"

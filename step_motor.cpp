@@ -3,9 +3,11 @@
 #include "Arduino.h"
 
 //TODO move to appconfig.h
-int minStepsToUnlock = 750;
-int stepsToFullUnlock = 1050; //TODO test
-int stepsBeforeLockDown = 2500;
+//int minStepsToUnlock = 750;
+//int stepsToFullUnlock = 1050; //TODO test
+//int stepsBeforeLockDown = 2500;
+
+
 
 //Constructor
 StepMotor::StepMotor() {
@@ -22,7 +24,7 @@ StepMotor::StepMotor() {
 //Doesn't check if door is closed, may cause an error if endstop is broken
 void StepMotor::unlock() {
   if(!digitalRead(PIN_ENDSTOP)){
-  	moveToUnlock(stepsToFullUnlock);
+  	moveToUnlock(STEPS_FULL_TO_UNLOCK);
     Serial.println("DOOR UNLOCKED");
 	} else {
     Serial.println("DOOR NOT IN STATE TO BE UNLOCKED!!!");
@@ -40,7 +42,7 @@ void StepMotor::lock() {
 
 bool StepMotor::checkIfLocked() {
 	if(digitalRead(PIN_ENDSTOP)) { //TODO could be simplified since steps can be 0
-    if(stepsToStopper() > minStepsToUnlock) {
+    if(stepsToStopper() > STEPS_MIN_TO_UNLOCK) {
       Serial.println("Steps to stopper > minsteps to unlock -> UNLOCKED");
       return false; //unlocked
     } else {
@@ -63,7 +65,7 @@ short StepMotor::stepsToStopper() {
   digitalWrite(PIN_DIR, LOW); //set direction
 
   //Door must be closed, endstop not reached, count of steps less than the maximum the lock can actually rotate
-  while(digitalRead(PIN_MAGNET) && digitalRead(PIN_ENDSTOP) && count <= stepsBeforeLockDown) {
+  while(digitalRead(PIN_MAGNET) && digitalRead(PIN_ENDSTOP) && count <= STEPS_BEFORE_LOCKDOWN) {
     digitalWrite(PIN_STEP, HIGH);
     delay(2);
     digitalWrite(PIN_STEP, LOW);
@@ -86,10 +88,15 @@ short StepMotor::stepsToStopper() {
 }
 
 //In the checkIfLocked method, lock goes to locked state to reach endstop.
-//TODO rewrite to return locked/unlocked/scanned
-void StepMotor::changeLockState() {
-  if(checkIfLocked()){
+event StepMotor::changeLockState() {
+  //TODO check if error state is needed (open door, pressed endstop)
+  if(!digitalRead(PIN_MAGNET)){ 
+    return SCAN;
+  } else if(checkIfLocked()) {
     unlock();
+    return UNLOCK;
+  } else {
+    return LOCK;
   }
 }
 

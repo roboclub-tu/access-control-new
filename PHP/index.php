@@ -35,7 +35,7 @@
         <?php
             //database connection
             define('DB_HOST', 'localhost');
-            define('DB_USENAME', 'php_esp');
+            define('DB_USENAME', 'root');
             define('DB_PASSWORD', 'test123');
             define('DB_NAME', 'roboclub_access_control');
 
@@ -47,19 +47,21 @@
             }
 
             //last_actions is a view that shows last 200 entries
-            $sql = "SELECT * FROM last_actions";
+            $sql = "SELECT * FROM last_events";
 
             $result = $mysql->query($sql);
 
             if($result->num_rows > 0) {
                 while($row = $result->fetch_assoc()) { //fetch an array within an array
                     //print 1 line
-                    echo "<tr><td>" . $row["name"] . "</td><td>" . $row["in_esp"] . "</td><td>" . $row["action"] . "</td><td>" . $row["timestamp"] . "</td></tr>";
+                    echo "<tr><td>" . $row["name"] . "</td><td>" . $row["in_esp"] . "</td><td>" . $row["event"] . "</td><td>" . $row["timestamp"] . "</td></tr>";
                 }
                 echo "</table>";
             } else {
                 echo "No Result";
             }
+
+            //Change name for (tag_hex)
 
             $mysql->close();
 

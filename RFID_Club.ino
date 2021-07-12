@@ -74,7 +74,7 @@ void receivedData(uint8_t* rawData, uint8_t bits, const char* message) {
       if (database.insert(dbTag)) {
         Serial.println("Inserted or already existed in local DB");
         
-        if(sendToServer(tag_hex, SERVER_ADD_TAG)){
+        if(sendToServer(tag_hex, ADD_TAG)){
           Serial.println("Succesfully added in Server");
         } else {
           Serial.println("Error writing to server!");
@@ -90,7 +90,7 @@ void receivedData(uint8_t* rawData, uint8_t bits, const char* message) {
       database.remove(dbTag);
       Serial.println("Deleted or didn't exist in local DB");
 
-      if(sendToServer(tag_hex, SERVER_DEL_TAG)){
+      if(sendToServer(tag_hex, DEL_TAG)){
           Serial.println("Succesfully deleted from Server");
       } else {
           Serial.println("Error writing to server!");
@@ -98,16 +98,19 @@ void receivedData(uint8_t* rawData, uint8_t bits, const char* message) {
     }
     //else check if tag is in DB, if yes: open door, else : access denied 
     else {
+      //TODO move var to more reasonable place
+      event stepper_event;
+      
       if (database.contains(dbTag)) {
         Serial.println("In DB");
         Serial.println("Changing lock state...");
-        stepper.changeLockState();
+        stepper_event = stepper.changeLockState();
       } else {
         Serial.println("NOT in DB");
       }
       
       //TODO test if multithreading is needed (if proccess is too slow)
-      if(sendToServer(tag_hex, SERVER_SCAN)){
+      if(sendToServer(tag_hex, stepper_event)){
           Serial.println("Succesfully added entry in Server");
       } else {
           Serial.println("Error writing to server!");
@@ -202,7 +205,7 @@ void printSensorData() {
 }
 
 //sends an http request containing a tag hex to the absolute path (foo.php)
-bool sendToServer(String tag, String action) {
+bool sendToServer(String tag, event given_event) {
   //proceed only if connected
     if(WiFi.status() == WL_CONNECTED) {
       HTTPClient http;
@@ -214,7 +217,7 @@ bool sendToServer(String tag, String action) {
       Serial.println("Server path:" + serverName);
       http.addHeader("Content-Type", "application/x-www-form-urlencoded");
 
-      String httpRequestData = "ApiKey=" + apiKey + "&Tag=" + tag + "&Action=" + action;
+      String httpRequestData = "ApiKey=" + apiKey + "&Tag=" + tag + "&Action=" + eventToString(given_event);
 
       Serial.print("HTTP Request: ");
       Serial.println(httpRequestData);
@@ -236,4 +239,21 @@ bool sendToServer(String tag, String action) {
       Serial.println("WiFi not connected");
       return false;
     }
+}
+
+String eventToString(event given_event) {
+  switch(given_event){
+    case UNLOCK:
+      return "UNLOCK";
+    case LOCK:
+      return "LOCK";
+    case ADD_TAG:
+      return "ADD_TAG";
+    case DEL_TAG:
+      return "DEL_TAG";
+    case SCAN:
+      return "SCAN";
+    default:
+      return "ERROR";
+  }
 }

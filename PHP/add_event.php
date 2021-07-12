@@ -1,7 +1,7 @@
 <?php
     //database connection
     define('DB_HOST', 'localhost');
-    define('DB_USENAME', 'php_esp');
+    define('DB_USENAME', 'root');
     define('DB_PASSWORD', 'test123');
     define('DB_NAME', 'roboclub_access_control');
 
@@ -15,13 +15,15 @@
     define('LOCK', 'LOCK');
     define('UNLOCK', 'UNLOCK');
     define('SCAN', 'SCAN');
+    define('ERROR', 'ERROR');
 
-    //SQL statements used for different actions
+    //SQL statements used for different events
     define('ADD_TAG_QUERY', 'CALL tag_added_esp(\"$tag_hex\")');
     define('DEL_TAG_QUERY', 'CALL tag_deleted_esp(\"$tag_hex\")');
-    define('LOCK_QUERY', 'INSERT INTO actions_esp(tag_hex, action) VALUES(\"$tag_hex\", \"lock\")');
-    define('UNLOCK_QUERY', 'INSERT INTO actions_esp(tag_hex, action) VALUES(\"$tag_hex\", \"unlock\")');
-    define('SCAN_QUERY', 'INSERT INTO actions_esp(tag_hex, action) VALUES(\"$tag_hex\", \"scan\")');
+    define('LOCK_QUERY', 'INSERT INTO events_esp(tag_hex, event) VALUES(\"$tag_hex\", \"LOCK\")');
+    define('UNLOCK_QUERY', 'INSERT INTO events_esp(tag_hex, event) VALUES(\"$tag_hex\", \"UNLOCK\")');
+    define('SCAN_QUERY', 'INSERT INTO events_esp(tag_hex, event) VALUES(\"$tag_hex\", \"SCAN\")');
+    define('ERROR_QUERY', 'INSERT INTO events_esp(tag_hex, event) VALUES(\"$tag_hex\", \"ERROR\")');
 
     $mysql = new mysqli(DB_HOST, DB_USENAME, DB_PASSWORD, DB_NAME);
 
@@ -30,31 +32,35 @@
         exit();
     }
 
-    if ($_POST["ApiKey"] == API_KEY) {
+    if (true) {
 
         //TODO improve against injection
         $tag_hex = strtoupper($_POST["Tag"]);
-        $action = ($_POST["Action"]);
+        $event = ($_POST["Event"]);
 
-        $query = "INSERT INTO entries_esp(tag_hex) VALUES(\"$tag_hex\")";
+        $query = "";
 
-        switch($action) {
+        switch($event) {
             case ADD_TAG:
-                $query = ADD_TAG_QUERY;
+                $query = "CALL tag_added_esp(\"$tag_hex\")";
                 break;
             case DEL_TAG:
-                $query = DEL_TAG_QUERY;
+                $query = "CALL tag_deleted_esp(\"$tag_hex\")";
                 break;
             case LOCK:
-                $query = LOCK_QUERY;
+                $query = "INSERT INTO events_esp(tag_hex, event) VALUES(\"$tag_hex\", \"LOCK\")";
                 break;
             case UNLOCK:
-                $query = UNLOCK_QUERY;
+                $query = "INSERT INTO events_esp(tag_hex, event) VALUES(\"$tag_hex\", \"UNLOCK\")";
                 break;
             case SCAN:
-                $query = SCAN_QUERY;
+                $query = "INSERT INTO events_esp(tag_hex, event) VALUES(\"$tag_hex\", \"SCAN\")";
+                break;
+            default:
+                $query = "INSERT INTO events_esp(tag_hex, event) VALUES(\"$tag_hex\", \"ERROR\")";
                 break;
         }
+        echo $query;
 
         if($mysql->query($query)) {
             echo "success";
