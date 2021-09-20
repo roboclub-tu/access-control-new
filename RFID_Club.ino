@@ -217,7 +217,7 @@ bool sendToServer(String tag, event given_event) {
       Serial.println("Server path:" + serverName);
       http.addHeader("Content-Type", "application/x-www-form-urlencoded");
 
-      String httpRequestData = "ApiKey=" + apiKey + "&Tag=" + tag + "&Action=" + eventToString(given_event);
+      String httpRequestData = "ApiKey=" + apiKey + "&Tag=" + tag + "&Event=" + eventToString(given_event);
 
       Serial.print("HTTP Request: ");
       Serial.println(httpRequestData);

@@ -31,7 +31,7 @@ void StepMotor::unlock() {
 	}
 }
 
-
+//Since checkIfLocked() function tests steps to endstops, once its reached, door is practically locked
 void StepMotor::lock() {
   if(!digitalRead(PIN_ENDSTOP)) {
     Serial.println("DOOR LOCKED (from checkIfLocked function)");
@@ -40,8 +40,15 @@ void StepMotor::lock() {
   }
 }
 
+//Uses stepsToStopper to see how many steps the motor has made until reaching endstop
+//after this function the door will be LOCKED
+//returns:
+//    true: endstop is already pressed OR steps to endstop were not enough for door to be unlocked (door WAS locked)
+//    false: steps to endstop WERE enough for door to be unlocked (door WAS unlocked)
+//
+//return statement is used to determine if door should stay locked or it should unlock  
 bool StepMotor::checkIfLocked() {
-	if(digitalRead(PIN_ENDSTOP)) { //TODO could be simplified since steps can be 0
+	if(digitalRead(PIN_ENDSTOP)) {
     if(stepsToStopper() > STEPS_MIN_TO_UNLOCK) {
       Serial.println("Steps to stopper > minsteps to unlock -> UNLOCKED");
       return false; //unlocked
@@ -55,7 +62,7 @@ bool StepMotor::checkIfLocked() {
   }
 }
 
-//Checks how many steps are there to the stopper
+//Checks how many steps are there to the endstop sensor
 short StepMotor::stepsToStopper() {
   short count = 0; //keep count of steps made so far
   
@@ -74,7 +81,6 @@ short StepMotor::stepsToStopper() {
   }
   
   //if the door was opened during the testing, revert the steps for protect the door
-  //TODO implement debouncing, often one reading is false, then true
   //FIXME rewrite so it reverts with only one FALSE reading
   if(!digitalRead(PIN_MAGNET)) {
     Serial.println("DOOR OPENED!");
